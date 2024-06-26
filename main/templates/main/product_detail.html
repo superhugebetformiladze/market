@@ -1,0 +1,62 @@
+{% extends "main/base.html" %}
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        {% if product.image %}
+          <img src="{{ product.image.url }}" class="img-fluid" alt="{{ product.name }}">
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        <h2>{{ product.name }}</h2>
+        <p>{{ product.description }}</p>
+        <p><strong>{{ product.price }} ₽</strong></p>
+        <p>
+          {% if average_rating %}
+            <span class="text-warning">&#9733;</span>
+            {{ average_rating|floatformat:1 }}
+          {% else %}
+            Пока нет рейтинга
+          {% endif %}
+        </p>
+        <form method="POST" action="{% url 'add_to_cart' product.id %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="quantity">Количество:</label>
+            <input type="number" id="quantity" name="quantity" class="form-control" value="1" min="1">
+          </div>
+          <button type="submit" class="btn btn-primary">В корзину</button>
+        </form>
+      </div>
+    </div>
+
+    <hr>
+
+    <h3>Отзывы</h3>
+    <div>
+      {% for review in reviews %}
+        <div class="review">
+          <p>
+            <strong>{{ review.customer.user.username }}</strong>
+            <span class="text-warning">&#9733;</span> 
+            {{ review.rating }}
+          </p>
+          <p>{{ review.comment }}</p>
+          <p><small>{{ review.created_at }}</small></p>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if user.is_authenticated %}
+      <hr>
+      <h3>Оставить отзыв</h3>
+      <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Отправить</button>
+      </form>
+    {% else %}
+      <p>Пожалуйста, <a href="{% url 'login' %}">войдите</a> чтобы оставить отзыв.</p>
+    {% endif %}
+  </div>
+{% endblock %}

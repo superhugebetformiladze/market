@@ -1,0 +1,31 @@
+/* Fix image height */
+.card-img-top {
+    height: 200px; /* фиксированная высота для изображений */
+    object-fit: cover; /* обрезка изображения для заполнения заданной высоты */
+}
+
+/* Truncate text with ellipsis */
+.card-title,
+.card-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* количество строк для обрезки */
+    -webkit-box-orient: vertical;
+    line-clamp: 1; /* для современных браузеров */
+    box-orient: vertical;
+}
+
+/* Truncate description to 2 lines */
+.card-text.description {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+    .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}

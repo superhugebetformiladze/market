@@ -1,0 +1,29 @@
+{% extends "main/base.html" %}
+{% block content %}
+  <div class="container">
+    <h2>{{ category.name }}</h2>
+    <div class="row">
+      {% for product in products %}
+        <div class="col-md-4">
+          <div class="card mb-4">
+            {% if product.image %}
+              <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+            {% endif %}
+            <div class="card-body">
+              <h5 class="card-title">{{ product.name }}</h5>
+              <p class="card-text">{{ product.description }}</p>
+              <p class="card-text"><strong>{{ product.price }} ₽</strong></p>
+              {% if product.average_rating %}
+                <p>
+                  <span class="text-warning">&#9733;</span> 
+                  {{ product.average_rating|floatformat:1 }}
+                </p>
+              {% endif %}
+              <a href="{% url 'product_detail' product.id %}" class="btn btn-primary">Посмотреть</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

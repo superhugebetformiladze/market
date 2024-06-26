@@ -1,0 +1,22 @@
+{% extends "main/base.html" %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card" style="width: 30rem;">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Профиль</h2>
+            <div class="mb-3">
+                <label class="form-label">Имя пользователя</label>
+                <p class="form-control-plaintext">{{ user.username }}</p>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email адрес</label>
+                <p class="form-control-plaintext">{{ user.email }}</p>
+            </div>
+            <a href="{% url 'logout' %}" class="btn btn-danger">Выйти</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
