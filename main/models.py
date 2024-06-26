@@ -1,14 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-def get_customer(self):
-    try:
-        return self.customer
-    except Customer.DoesNotExist:
-        return Customer.objects.create(user=self)
-
-User.add_to_class('get_customer', get_customer)
-
 class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
@@ -27,22 +19,24 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-class Customer(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone = models.CharField(max_length=15, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
+class Review(models.Model):
+    product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='reviews', on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField()
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.user.username
+        return f'Review for {self.product.name} by {self.user.username}'
 
 class Order(models.Model):
-    customer = models.ForeignKey(Customer, related_name='orders', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='orders', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_paid = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'Order {self.id} by {self.customer.user.username}'
+        return f'Order {self.id} by {self.user.username}'
 
     @property
     def get_total_price(self):
@@ -56,32 +50,3 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f'{self.product.name} ({self.quantity})'
-
-class Supplier(models.Model):
-    name = models.CharField(max_length=100)
-    contact_name = models.CharField(max_length=100)
-    phone = models.CharField(max_length=15)
-    email = models.EmailField()
-    address = models.TextField()
-
-    def __str__(self):
-        return self.name
-
-class Stock(models.Model):
-    product = models.ForeignKey(Product, related_name='stock_entries', on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f'{self.quantity} of {self.product.name}'
-
-class Review(models.Model):
-    product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
-    customer = models.ForeignKey(Customer, related_name='reviews', on_delete=models.CASCADE)
-    rating = models.PositiveIntegerField()
-    comment = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f'Review for {self.product.name} by {self.customer.user.username}'
-

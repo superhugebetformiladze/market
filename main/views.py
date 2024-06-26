@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import Avg
 from .forms import UserRegisterForm, UserLoginForm, ReviewForm
-from .models import Category, Product, Order, OrderItem, Customer, Review
+from .models import Category, Product, Order, OrderItem, Review
 
 def register(request):
     if request.method == 'POST':
@@ -13,7 +13,6 @@ def register(request):
         if form.is_valid():
             with transaction.atomic():
                 user = form.save()
-                Customer.objects.create(user=user)
             username = form.cleaned_data.get('username')
             messages.success(request, f'Account created for {username}!')
             return redirect('login')
@@ -58,7 +57,6 @@ def category_detail(request, category_id):
 
     return render(request, 'main/category_detail.html', {'category': category, 'products': products})
 
-
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     reviews = product.reviews.all()
@@ -69,7 +67,7 @@ def product_detail(request, product_id):
         if form.is_valid():
             review = form.save(commit=False)
             review.product = product
-            review.customer = request.user.get_customer()
+            review.user = request.user
             review.save()
             return redirect('product_detail', product_id=product.id)
     else:
@@ -85,8 +83,7 @@ def product_detail(request, product_id):
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    customer = request.user.get_customer()
-    order, created = Order.objects.get_or_create(customer=customer, is_paid=False)
+    order, created = Order.objects.get_or_create(user=request.user, is_paid=False)
 
     if request.method == 'POST':
         quantity = int(request.POST.get('quantity'))
@@ -106,8 +103,7 @@ def add_to_cart(request, product_id):
 @login_required
 def update_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    customer = request.user.get_customer()
-    order = get_object_or_404(Order, customer=customer, is_paid=False)
+    order = get_object_or_404(Order, user=request.user, is_paid=False)
     order_item = get_object_or_404(OrderItem, order=order, product=product)
 
     if request.method == 'POST':
@@ -124,16 +120,20 @@ def update_cart(request, product_id):
 @login_required
 def remove_from_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    customer = request.user.get_customer()
-    order = get_object_or_404(Order, customer=customer, is_paid=False)
+    order = get_object_or_404(Order, user=request.user, is_paid=False)
     order_item = get_object_or_404(OrderItem, order=order, product=product)
 
     if request.method == 'POST':
         order_item.delete()
-        
+
     return redirect('cart')
 
 @login_required
 def cart(request):
-    order = get_object_or_404(Order, customer=request.user.customer, is_paid=False)
+    try:
+        order = Order.objects.get(user=request.user, is_paid=False)
+    except Order.DoesNotExist:
+        order = None
+
     return render(request, 'main/cart.html', {'order': order})
+
